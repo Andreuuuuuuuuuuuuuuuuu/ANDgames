@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🍋 Puesto de Limonadas - Estaciones</title>
+
+<style>
+body{
+    background: #ffe680;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+.caja{
+    background: white;
+    width: 600px;
+    max-width: 95%;
+    margin: auto;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+h1{
+    color: #cc8800;
+}
+
+button{
+    background: orange;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover{
+    background: darkorange;
+}
+
+.btn-diff {
+    background: #555;
+}
+
+.btn-diff.selected {
+    background: #2ecc71;
+}
+
+#btn-verano.selected { background: #f1c40f; color: #333; }
+#btn-primavera.selected { background: #2ecc71; }
+#btn-otono.selected { background: #e67e22; }
+#btn-invierno.selected { background: #3498db; }
+
+input{
+    width: 120px;
+    padding: 8px;
+    font-size: 16px;
+    text-align: center;
+}
+
+#resultado{
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+.clima{
+    font-size: 30px;
+    margin: 15px;
+}
+
+.barra{
+    width: 100%;
+    height: 30px;
+    background: #ddd;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progreso{
+    height: 100%;
+    line-height: 30px;
+    color: white;
+    font-weight: bold;
+    background: skyblue;
+    transition: width 1s;
+}
+
+.tag-estacion {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+#btn-cutre{
+    background:#c0392b;
+}
+
+#btn-normal{
+    background:#f1c40f;
+    color:#333;
+}
+
+#btn-plus{
+    background:#9b59b6;
+}
+
+.info-calidad{
+    font-weight:bold;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="caja">
+
+<h1>🍋 Puesto de Limonadas 🍋</h1>
+
+<div id="configuracion-inicial">
+
+    <h2>1️⃣ Elige la Estación</h2>
+
+    <button id="btn-verano" class="btn-diff selected"
+    onclick="cambiarDificultad('verano')">
+    ☀️ Verano
+    </button>
+
+    <button id="btn-primavera" class="btn-diff"
+    onclick="cambiarDificultad('primavera')">
+    🌤️ Primavera
+    </button>
+
+    <button id="btn-otono" class="btn-diff"
+    onclick="cambiarDificultad('otono')">
+    🍂 Otoño
+    </button>
+
+    <button id="btn-invierno" class="btn-diff"
+    onclick="cambiarDificultad('invierno')">
+    ❄️ Invierno
+    </button>
+
+    <h2>2️⃣ ¿Cuántos días quieres jugar?</h2>
+
+    <button onclick="iniciarJuego(1)">1 Día</button>
+    <button onclick="iniciarJuego(7)">7 Días</button>
+    <button onclick="iniciarJuego(15)">15 Días</button>
+    <button onclick="iniciarJuego(30)">30 Días</button>
+
+</div>
+
+<div id="resultado"></div>
+
+</div>
+
+<script>
+
+let totalDias = 0;
+let diaActual = 1;
+let dinero = 150;
+
+let dificultadSeleccionada = "verano";
+
+let climaActual = "";
+let clientesBase = 0;
+
+let probabilidadLluvia = 0;
+let llovio = false;
+
+let calidadSeleccionada = "normal";
+
+function cambiarDificultad(estacion){
+
+    dificultadSeleccionada = estacion;
+
+    const botones = document.querySelectorAll('.btn-diff');
+
+    botones.forEach(btn => btn.classList.remove('selected'));
+
+    document.getElementById(`btn-${estacion}`).classList.add('selected');
+}
+
+function obtenerColorEstacion(){
+
+    switch(dificultadSeleccionada){
+
+        case "verano":
+            return "#f1c40f";
+
+        case "primavera":
+            return "#2ecc71";
+
+        case "otono":
+            return "#e67e22";
+
+        case "invierno":
+            return "#3498db";
+    }
+}
+
+function iniciarJuego(dias){
+
+    document.getElementById("configuracion-inicial").style.display = "none";
+
+    totalDias = dias;
+    diaActual = 1;
+
+    if(dificultadSeleccionada === "verano"){
+        dinero = 200;
+    }
+    else if(dificultadSeleccionada === "invierno"){
+        dinero = 100;
+    }
+    else{
+        dinero = 150;
+    }
+
+    mostrarDia();
+}
+
+function mostrarDia(){
+
+    if(diaActual > totalDias){
+
+        document.getElementById("resultado").innerHTML = `
+
+        <hr>
+
+        <h2>🎉 JUEGO TERMINADO 🎉</h2>
+
+        <div class="tag-estacion"
+        style="background:${obtenerColorEstacion()}">
+        ${dificultadSeleccionada.toUpperCase()}
+        </div>
+
+        <h2>🏦 Dinero final: $${dinero.toFixed(2)}</h2>
+
+        <button onclick="location.reload()">
+        🔄 Jugar otra vez
+        </button>
+        `;
+
+        return;
+    }
+
+    probabilidadLluvia = 0;
+    llovio = false;
+
+    let numero = Math.random();
+
+    let lluviaHTML = "";
+
+    // VERANO
+    if(dificultadSeleccionada === "verano"){
+
+        if(numero < 0.60){
+            climaActual = "☀️ Día MUY caluroso";
+            clientesBase = 70;
+        }
+        else if(numero < 0.90){
+            climaActual = "🌤️ Día soleado";
+            clientesBase = 40;
+        }
+        else{
+            climaActual = "☁️ Día nublado";
+            clientesBase = 20;
+        }
+    }
+
+    // PRIMAVERA
+    else if(dificultadSeleccionada === "primavera"){
+
+        if(numero < 0.35){
+            climaActual = "☀️ Día MUY caluroso";
+            clientesBase = 70;
+        }
+        else if(numero < 0.70){
+            climaActual = "🌤️ Día soleado";
+            clientesBase = 40;
+        }
+        else{
+            climaActual = "☁️ Día nublado";
+            clientesBase = 20;
+        }
+    }
+
+    // OTOÑO
+    else if(dificultadSeleccionada === "otono"){
+
+        if(numero < 0.10){
+            climaActual = "☀️ Día MUY caluroso";
+            clientesBase = 70;
+        }
+        else if(numero < 0.40){
+            climaActual = "🌤️ Día soleado";
+            clientesBase = 40;
+        }
+        else{
+            climaActual = "☁️ Día nublado";
+            clientesBase = 20;
+        }
+    }
+
+    // INVIERNO
+    else{
+
+        if(numero < 0.05){
+            climaActual = "☀️ Día templado";
+            clientesBase = 35;
+        }
+        else if(numero < 0.20){
+            climaActual = "🌤️ Día soleado pero frío";
+            clientesBase = 20;
+        }
+        else{
+            climaActual = "☁️ Día GÉLIDO";
+            clientesBase = 8;
+        }
+    }
+
+    // LLUVIA
+    if(climaActual.includes("nublado") || climaActual.includes("GÉLIDO")){
+
+        let opciones = [10,30,50,70];
+
+        if(dificultadSeleccionada === "otono"){
+            opciones = [40,60,80,95];
+        }
+
+        probabilidadLluvia =
+        opciones[Math.floor(Math.random()*opciones.length)];
+
+        lluviaHTML = `
+
+        <h3>🌧️ Probabilidad de lluvia</h3>
+
+        <div class="barra">
+            <div class="progreso"
+            style="width:${probabilidadLluvia}%">
+            ${probabilidadLluvia}%
+            </div>
+        </div>
+        `;
+
+        llovio = Math.random()*100 < probabilidadLluvia;
+    }
+
+    document.getElementById("resultado").innerHTML = `
+
+    <hr>
+
+    <div class="tag-estacion"
+    style="background:${obtenerColorEstacion()}">
+    ${dificultadSeleccionada.toUpperCase()}
+    </div>
+
+    <h2>📅 Día ${diaActual} / ${totalDias}</h2>
+
+    <div class="clima">${climaActual}</div>
+
+    ${lluviaHTML}
+
+    <hr>
+
+    <h2>🏦 Dinero: $${dinero.toFixed(2)}</h2>
+
+    <hr>
+
+    <h3>⭐ Calidad de la limonada</h3>
+
+    <button id="btn-cutre"
+    onclick="seleccionarCalidad('cutre')">
+    🪣 Cutre
+    </button>
+
+    <button id="btn-normal"
+    onclick="seleccionarCalidad('normal')">
+    🍋 Normal
+    </button>
+
+    <button id="btn-plus"
+    onclick="seleccionarCalidad('plus')">
+    👑 Plus
+    </button>
+
+    <div class="info-calidad" id="info-calidad"></div>
+
+    <hr>
+
+    <h3>🍋 ¿Cuántas limonadas quieres hacer?</h3>
+
+    <input type="number" id="limonadas"
+    value="15" min="0">
+
+    <hr>
+
+    <h3>📢 ¿Cuántos carteles quieres colocar?</h3>
+
+    <input type="number" id="carteles"
+    value="1" min="0">
+
+    <p>Cada cartel cuesta $10</p>
+
+    <hr>
+
+    <h3>💲 Precio por limonada</h3>
+
+    <input type="number" id="precio"
+    value="3.5" step="0.5" min="1">
+
+    <br><br>
+
+    <button onclick="vender()">
+    🚀 Empezar ventas
+    </button>
+    `;
+
+    seleccionarCalidad("normal");
+}
+
+function seleccionarCalidad(tipo){
+
+    calidadSeleccionada = tipo;
+
+    if(tipo === "cutre"){
+
+        document.getElementById("info-calidad").innerHTML =
+        "🪣 Muy barata. Si la vendes cara podrían demandarte.";
+    }
+
+    else if(tipo === "normal"){
+
+        document.getElementById("info-calidad").innerHTML =
+        "🍋 Calidad equilibrada.";
+    }
+
+    else{
+
+        document.getElementById("info-calidad").innerHTML =
+        "👑 Calidad premium. Más clientes aceptan precios altos.";
+    }
+}
+
+function vender(){
+
+    let limonadas =
+    parseInt(document.getElementById("limonadas").value) || 0;
+
+    let carteles =
+    parseInt(document.getElementById("carteles").value) || 0;
+
+    let precio =
+    parseFloat(document.getElementById("precio").value) || 0;
+
+    let costeUnidad = 3;
+
+    if(calidadSeleccionada === "cutre"){
+        costeUnidad = 1.5;
+    }
+
+    if(calidadSeleccionada === "plus"){
+        costeUnidad = 5;
+    }
+
+    let gastoLimonadas = limonadas * costeUnidad;
+    let gastoCarteles = carteles * 10;
+
+    let gastos = gastoLimonadas + gastoCarteles;
+
+    if(gastos > dinero){
+
+        document.getElementById("resultado").innerHTML = `
+
+        <h2>❌ No tienes suficiente dinero</h2>
+
+        <button onclick="mostrarDia()">
+        🔄 Reintentar
+        </button>
+        `;
+
+        return;
+    }
+
+    dinero -= gastos;
+
+    let clientes =
+    clientesBase + Math.floor(Math.random()*10);
+
+    clientes += carteles * 5;
+
+    // EFECTO CALIDAD
+    if(calidadSeleccionada === "plus"){
+        clientes += 20;
+    }
+
+    if(calidadSeleccionada === "cutre"){
+        clientes -= 10;
+    }
+
+    let precioReferencia = 4;
+
+    if(dificultadSeleccionada === "invierno"){
+        precioReferencia = 2;
+    }
+
+    clientes -= Math.max(0,(precio-precioReferencia)*5);
+
+    if(climaActual.includes("MUY caluroso")){
+        clientes += 25;
+    }
+
+    if(climaActual.includes("GÉLIDO")){
+        clientes -= 5;
+    }
+
+    if(llovio){
+        clientes = Math.floor(clientes * 0.15);
+    }
+
+    if(clientes < 0){
+        clientes = 0;
+    }
+
+    clientes = Math.floor(clientes);
+
+    let vendidas = Math.min(clientes, limonadas);
+
+    let ganancias = vendidas * precio;
+
+    dinero += ganancias;
+
+    // DEMANDAS
+    let multa = 0;
+
+    if(
+        calidadSeleccionada === "cutre"
+        &&
+        precio >= 4
+    ){
+
+        let demanda = Math.random() < 0.35;
+
+        if(demanda){
+
+            multa = vendidas * precio * 2;
+
+            dinero -= multa;
+        }
+    }
+
+    let mensaje = "";
+
+    if(llovio){
+        mensaje =
+        "🌧️ La lluvia redujo muchísimo las ventas.";
+    }
+
+    else if(calidadSeleccionada === "plus"){
+        mensaje =
+        "👑 Los clientes adoraron la calidad premium.";
+    }
+
+    else if(calidadSeleccionada === "cutre"){
+        mensaje =
+        "🪣 Algunos clientes sospechaban de la calidad...";
+    }
+
+    else{
+        mensaje =
+        "🍋 Día normal de ventas.";
+    }
+
+    let resultado = `
+
+    <hr>
+
+    <h2>📊 RESULTADOS</h2>
+
+    <p>👥 Clientes potenciales: ${clientes}</p>
+
+    <p>🍋 Vendidas: ${vendidas}</p>
+
+    <p>🗑️ Sobrantes: ${limonadas-vendidas}</p>
+
+    <hr>
+
+    <p>💸 Gastos: $${gastos.toFixed(2)}</p>
+
+    <p>💵 Ganancias: $${ganancias.toFixed(2)}</p>
+
+    ${multa > 0 ?
+
+    `<p style="color:red;font-weight:bold;">
+    ⚖️ ¡DEMANDA!
+    Te hicieron pagar
+    $${multa.toFixed(2)}
+    por vender limonada cutre demasiado cara.
+    </p>`
+
+    : ""}
+
+    <h2>🏦 Dinero: $${dinero.toFixed(2)}</h2>
+
+    <p><strong>${mensaje}</strong></p>
+    `;
+
+    if(vendidas === limonadas && limonadas > 0){
+
+        resultado += `
+        <h3>🔥 ¡Vendiste TODO!</h3>
+        `;
+    }
+
+    if(dinero <= 0){
+
+        resultado += `
+
+        <hr>
+
+        <h2>💀 GAME OVER</h2>
+
+        <button onclick="location.reload()">
+        🔄 Reiniciar
+        </button>
+        `;
+
+        document.getElementById("resultado").innerHTML =
+        resultado;
+
+        return;
+    }
+
+    resultado += `
+
+    <button onclick="siguienteDia()">
+    ➡️ Siguiente Día
+    </button>
+    `;
+
+    document.getElementById("resultado").innerHTML =
+    resultado;
+}
+
+function siguienteDia(){
+
+    diaActual++;
+
+    mostrarDia();
+}
+
+</script>
+
+</body>
+</html>
